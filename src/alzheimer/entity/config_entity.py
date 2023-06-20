@@ -9,6 +9,7 @@ class DataIngestionConfig:
     local_data_file: Path
     unzip_dir: Path
 
+
 @dataclass(frozen=True)
 class PrepareBaseModelConfig:
     root_dir: Path
@@ -20,13 +21,11 @@ class PrepareBaseModelConfig:
     params_weights: str
     params_classes: int
 
-
 @dataclass(frozen=True)
 class PrepareCallbacksConfig:
     root_dir: Path
     tensorboard_root_log_dir: Path
     checkpoint_model_filepath: Path
-
 
 @dataclass(frozen=True)
 class TrainingConfig:
@@ -39,11 +38,10 @@ class TrainingConfig:
     params_is_augmentation: bool
     params_image_size: list
 
-
-
 @dataclass(frozen=True)
 class EvaluationConfig:
     path_of_model: Path
     training_data: Path
+    all_params: dict
     params_image_size: list
     params_batch_size: int
