@@ -1,49 +1,37 @@
 import os
 import urllib.request as request
-from zipfile import ZipFile
-from tqdm import tqdm
+import zipfile
+from alzheimer import logger
+from alzheimer.utils.common import get_size
+from alzheimer.entity.config_entity import DataIngestionConfig
 from pathlib import Path
-from cdClassifier.entity import DataIngestionConfig
-from cdClassifier import logger
-from cdClassifier.utils import get_size
 
 
 class DataIngestion:
     def __init__(self, config: DataIngestionConfig):
         self.config = config
 
+
+    
     def download_file(self):
-        logger.info("Trying to download file...")
         if not os.path.exists(self.config.local_data_file):
-            logger.info("Download started...")
             filename, headers = request.urlretrieve(
-                url=self.config.source_URL,
-                filename=self.config.local_data_file
+                url = self.config.source_URL,
+                filename = self.config.local_data_file
             )
             logger.info(f"{filename} download! with following info: \n{headers}")
         else:
-            logger.info(f"File already exists of size: {get_size(Path(self.config.local_data_file))}")        
-
-    def _get_updated_list_of_files(self, list_of_files):
-        return [f for f in list_of_files if f.endswith(".jpg") and ("Cat" in f or "Dog" in f)]
-
-    def _preprocess(self, zf: ZipFile, f: str, working_dir: str):
-        target_filepath = os.path.join(working_dir, f)
-        if not os.path.exists(target_filepath):
-            zf.extract(f, working_dir)
-        
-        if os.path.getsize(target_filepath) == 0:
-            logger.info(f"removing file:{target_filepath} of size: {get_size(Path(target_filepath))}")
-            os.remove(target_filepath)
-
-    def unzip_and_clean(self):
-        logger.info(f"unzipping file and removing unawanted files")
-        with ZipFile(file=self.config.local_data_file, mode="r") as zf:
-            list_of_files = zf.namelist()
-            updated_list_of_files = self._get_updated_list_of_files(list_of_files)
-            for f in tqdm(updated_list_of_files):
-                self._preprocess(zf, f, self.config.unzip_dir)
-                
+            logger.info(f"File already exists of size: {get_size(Path(self.config.local_data_file))}")  
 
 
-# Also define to component contractor __init__.py
+    
+    def extract_zip_file(self):
+        """
+        zip_file_path: str
+        Extracts the zip file into the data directory
+        Function returns None
+        """
+        unzip_path = self.config.unzip_dir
+        os.makedirs(unzip_path, exist_ok=True)
+        with zipfile.ZipFile(self.config.local_data_file, 'r') as zip_ref:
+            zip_ref.extractall(unzip_path)
